@@ -7,6 +7,7 @@
 
 #define _DARWIN_C_SOURCE
 #define _DEFAULT_SOURCE
+#define _XOPEN_SOURCE 700
 #include <fcntl.h>
 #include <poll.h>
 #include <stdio.h>
