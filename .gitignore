@@ -1,0 +1,6 @@
+build/
+tests/test_bootloader
+tests/samba_pty
+tests/disk.img
+tests/*.dSYM/
+.DS_Store
