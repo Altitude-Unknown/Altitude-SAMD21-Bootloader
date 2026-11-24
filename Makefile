@@ -27,7 +27,7 @@ ifdef BOARD
 build/$(BOARD)/bootloader-$(BOARD)-v$(VERSION).bin: $(SOURCES) src/*.h boards/$(BOARD).h src/samd21.ld
 	@mkdir -p build/$(BOARD)
 	$(CC) $(CFLAGS) -include boards/$(BOARD).h $(SOURCES) $(LDFLAGS) -o build/$(BOARD)/bootloader.elf
-	$(OBJCOPY) -O binary build/$(BOARD)/bootloader.elf $@
+	$(OBJCOPY) -O binary --pad-to 0x2000 --gap-fill 0xFF build/$(BOARD)/bootloader.elf $@  # the whole 8 KB, so flashing clears leftovers
 	@$(SIZE) build/$(BOARD)/bootloader.elf
 endif
 

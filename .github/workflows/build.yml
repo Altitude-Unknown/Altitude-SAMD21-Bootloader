@@ -14,17 +14,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install the ARM compiler
-        run: sudo apt-get update && sudo apt-get install -y gcc-arm-none-eabi
+      - name: Install the ARM compiler (the same release the Arduino SAMD core ships, so builds match)
+        run: |
+          curl -sSfL -o gcc.tar.bz2 "https://developer.arm.com/-/media/Files/downloads/gnu-rm/9-2019q4/gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux.tar.bz2"
+          mkdir -p "$RUNNER_TEMP/gcc" && tar -xjf gcc.tar.bz2 -C "$RUNNER_TEMP/gcc" --strip-components=1
+          echo "TOOLCHAIN=$RUNNER_TEMP/gcc/bin/" >> "$GITHUB_ENV"
+          "$RUNNER_TEMP/gcc/bin/arm-none-eabi-gcc" --version | head -n 1
       - name: Host tests (simulated SAMD21)
         run: make test
       - name: Build every board
-        run: make all TOOLCHAIN=/usr/bin/
-      - name: Check sizes (must fit in 8 KB)
+        run: make all TOOLCHAIN=$TOOLCHAIN && sha256sum build/*/*.bin
+      - name: Check sizes (exactly 8 KB, padded)
         run: |
           for f in build/*/*.bin; do
             size=$(stat -c %s "$f"); echo "$f: $size bytes"
-            [ "$size" -le 8192 ] || { echo "::error::$f is larger than 8 KB"; exit 1; }
+            [ "$size" -eq 8192 ] || { echo "::error::$f is not 8 KB (the code must fit in 8 KB)"; exit 1; }
           done
       - uses: actions/upload-artifact@v4
         with:
